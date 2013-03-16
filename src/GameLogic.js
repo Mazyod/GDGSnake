@@ -81,6 +81,7 @@ exports = Class( Emitter, function (supr) {
 		this._snake = snake;
 		this._curDirection = this._newDirection = DIRECTION.RT;
 		this._tabemono = this._generateTabemono();
+		this._score = 0;
 	}
 
 	// generate food that doesn't intersect with the snake's body.
@@ -136,6 +137,7 @@ exports = Class( Emitter, function (supr) {
 			// ...we generate a new tabemono without popping the tail which increases the
 			// snake size. There is no way the user can lose in this situation, so don't check
 			this._tabemono = tabemono = this._generateTabemono();
+			this._score++;
 		} else {
 			// else, pop the tail, and set it empty on the gameboard
 			var tail = this._snake.pop();
@@ -154,7 +156,8 @@ exports = Class( Emitter, function (supr) {
 			didLose: didLose,
 			didEat: didEat,
 			newLocation: snakeHead,
-			tabemono: tabemono
+			tabemono: tabemono,
+			score: this._score
 		});
 
 	}

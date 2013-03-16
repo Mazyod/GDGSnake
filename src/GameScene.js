@@ -1,6 +1,7 @@
 
 import src.GameLogic as GameLogic;
 import ui.View as View;
+import ui.TextView as TextView;
 import device;
 
 /*
@@ -37,21 +38,37 @@ exports = Class(View, function (supr) {
 	this.init = function (opts) {
 		// call super init, with 1 argument(s)
 		supr(this, 'init', [opts]);
-		// we assume 4:3 aspect ratio
-		// If in doubt, ALWAYS USE BOC LAYOUT
+		// Setup our canvas which holds the whole game
 		var canvas = new View({
 			superview: this,
-			layout: 'box',
+			// If in doubt, ALWAYS USE BOX LAYOUT
+			layout: 'linear',
 			centerY: true,
 			centerX: true,
+			// we assume 4:3 aspect ratio
 			width: Math.floor((4.0/3.0) * device.screen.height),
 			height: device.screen.height,
-			backgroundColor: '#333333'
+			backgroundColor: '#333333',
+			justifyContent: 'end',
+			direction: 'vertical'
+		});
+		// Setup the scrore label
+		var scoreLabel = new TextView({
+			superview: canvas,
+			layout: 'box',
+			text: 'SCORE: 0',
+			color: '#555',
+			horizontalAlign: 'left',
+			size: 100,
+			layoutWidth: '100%',
+			layoutHeight: '14%',
+			padding: '10 10 10 10'
 		});
 
-		blockLength = (canvas.style.height / GameLogic.ROWS);
-
 		this._canvas = canvas;
+		this._scoreLabel = scoreLabel;
+
+		blockLength = (canvas.style.height / GameLogic.ROWS);
 
 		var snake = [];
 		var snakeLength = GameLogic.SNAKE_START_LENGTH;
@@ -67,7 +84,8 @@ exports = Class(View, function (supr) {
 			y: -blockLength,
 			width: blockLength,
 			height: blockLength,
-			backgroundColor: tabemonoColor
+			backgroundColor: tabemonoColor,
+			inLayout: false
 		});
 
 		this._tabemono = tabemono;
@@ -86,6 +104,7 @@ exports = Class(View, function (supr) {
 		var newLocation = args.newLocation;
 		var didEat = args.didEat;
 		var tabemono = args.tabemono;
+		var score = args.score;
 		// if we ate, create a new block as a head, otherwise move the tail head
 		var newHead = (didEat ? this._newSnakeBlock(0, 0) : this._snake.pop());
 		newHead.updateOpts({
@@ -101,6 +120,10 @@ exports = Class(View, function (supr) {
 				x: tabemono.c * blockLength,
 				y: tabemono.r * blockLength
 			});
+			// update the score label
+			this._scoreLabel.updateOpts({
+				text: 'SCORE: ' + (score * 25)
+			});
 		// else if we lost, add a red block where the collision happened
 		} else if (didLose) {
 			this._newSnakeBlock(newLocation.r, newLocation.c).updateOpts({
@@ -113,6 +136,7 @@ exports = Class(View, function (supr) {
 	this._newSnakeBlock = function (row, column) {
 		return new View({
 			superview: this._canvas,
+			inLayout: false,
 			x: column * blockLength,
 			y: row * blockLength,
 			// IMPORTANT: Increase block size a bit to fill gaps between blocks
