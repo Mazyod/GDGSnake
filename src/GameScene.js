@@ -27,6 +27,7 @@ import device;
 /* ---- GAME SCENE CONSTANTS ---- */
 
 var snakeColor = '#0A0';
+var snakeLoseColor = '#F00';
 var tabemonoColor = '#FFF';
 
 var blockLength;
@@ -55,7 +56,7 @@ exports = Class(View, function (supr) {
 		var snake = [];
 		var snakeLength = GameLogic.SNAKE_START_LENGTH;
 		for (var i = 0; i < snakeLength ; i++) {
-			snake.push(this._newSnakeBlock(snakeLength - i - 1, 0));
+			snake.push(this._newSnakeBlock(0, snakeLength - i - 1));
 		};
 
 		this._snake = snake;
@@ -79,35 +80,42 @@ exports = Class(View, function (supr) {
 
 	}
 
+	// Update the GUI after the logic changed
 	this.snakeMoved = function (args) {
 		var didLose = args.didLose;
 		var newLocation = args.newLocation;
 		var didEat = args.didEat;
 		var tabemono = args.tabemono;
-
+		// if we ate, create a new block as a head, otherwise move the tail head
 		var newHead = (didEat ? this._newSnakeBlock(0, 0) : this._snake.pop());
 		newHead.updateOpts({
 			x: newLocation.c * blockLength,
-			y: newLocation.r * blockLength
+			y: newLocation.r * blockLength,
 		});
-
+		// insert the new head at the beginning of the array
 		this._snake.splice(0, 0, newHead);
-
+		// if we ate, or this is the first time we are running
 		if (didEat || this._tabemono.style.x < 0) {
-			console.log('GUI ATE!!');
+			// Move the tabemono to the Logic's new location
 			this._tabemono.updateOpts({
 				x: tabemono.c * blockLength,
 				y: tabemono.r * blockLength
+			});
+		// else if we lost, add a red block where the collision happened
+		} else if (didLose) {
+			this._newSnakeBlock(newLocation.r, newLocation.c).updateOpts({
+				backgroundColor: snakeLoseColor
 			});
 		}
 	}
 
 	// create and return a view representing a block from the snake
-	this._newSnakeBlock = function (xIndex, yIndex) {
+	this._newSnakeBlock = function (row, column) {
 		return new View({
 			superview: this._canvas,
-			x: xIndex * blockLength,
-			y: yIndex * blockLength,
+			x: column * blockLength,
+			y: row * blockLength,
+			// IMPORTANT: Increase block size a bit to fill gaps between blocks
 			width: blockLength * 1.05,
 			height: blockLength * 1.05,
 			backgroundColor: snakeColor
@@ -115,7 +123,7 @@ exports = Class(View, function (supr) {
 	}
 
 	/* ---- TOUCH HANDLER FUNCTIONS ---- */
-
+	var _capturedTouches = null;
 	// Capture the initial point we touched upon
 	function touchBegan (event, point) {
 		_capturedTouches = [point];

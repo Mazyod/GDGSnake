@@ -44,7 +44,7 @@ exports = Class( Emitter, function (supr) {
 
 	// to make the game logic start ticking, call this function
 	this.startGame = function () {
-		setInterval(this._tick.bind(this), 500.0 / snakeSpeed);
+		this._tickID = setInterval(this._tick.bind(this), 500.0 / snakeSpeed);
 	}
 
 	// this method is called when the user input is captured and emitted
@@ -145,8 +145,10 @@ exports = Class( Emitter, function (supr) {
 		}
 		// set the new location to occupied in the gameboard
 		this._gameBoard[snakeHead.r][snakeHead.c] = true;
-
-		console.log('GameLogic params: ' + didLose + ', ' + didEat + ', (' + snakeHead.r + ', ' + snakeHead.c + '), (' + tabemono.r + ', ' + tabemono.c + ')');
+		// if we lost, stop ticking
+		if (didLose) {
+			clearInterval(this._tickID);
+		}
 		// finally, update the GameScene
 		this.emit('logicUpdated', {
 			didLose: didLose,
