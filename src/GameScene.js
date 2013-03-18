@@ -56,7 +56,7 @@ exports = Class(View, function (supr) {
 		var scoreLabel = new TextView({
 			superview: canvas,
 			layout: 'box',
-			text: 'SCORE: 0',
+			text: '',
 			color: '#555',
 			horizontalAlign: 'left',
 			size: 100,
