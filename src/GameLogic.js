@@ -55,6 +55,11 @@ exports = Class( Emitter, function (supr) {
 		}
 	}
 
+	// resets the game logic to initial state
+	this.reset = function () {
+		this._initializeGameBoard();
+	}
+
 	// prepares the initial game setup
 	this._initializeGameBoard = function () {
 		// 1 - Prepare the game board.

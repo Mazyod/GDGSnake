@@ -37,14 +37,25 @@ exports = Class(GC.Application, function () {
 		// make the gameScene listen to the gamelogic's ticks
 		gameScene.on('newDirection', bind(gameLogic, 'moveSnake'));
 		// make the logic listen to the gamescene's user input
-		gameLogic.on('logicUpdated', bind(gameScene, 'snakeMoved'))
+		gameLogic.on('logicUpdated', bind(gameScene, 'snakeMoved'));
+		// make the application listen to a reset event
+		gameScene.on('resetGame', bind(this, 'resetGame'));
 		// start the countdown ater 1.5 sec
 		setTimeout( function () {
 			countdown.beginAnimation(countdownCallback.bind(this));
 		}.bind(this), 1500);
 
 		this._gameLogic = gameLogic;
+		this._gameScene = gameScene;
 	};
+
+	// resets the game, both logic and scene
+	this.resetGame = function () {
+		this._gameLogic.reset();
+		this._gameScene.reset();
+
+		new CountdownView().beginAnimation(countdownCallback.bind(this));
+	}
 
 	// start the game as soon as the countdown finishes
 	function countdownCallback () {

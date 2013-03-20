@@ -2,6 +2,7 @@
 import src.GameLogic as GameLogic;
 import ui.View as View;
 import ui.TextView as TextView;
+import ui.widget.ButtonView as ButtonView;
 import device;
 
 /*
@@ -34,7 +35,7 @@ var tabemonoColor = '#FFF';
 var blockLength;
 
 exports = Class(View, function (supr) {
-	
+	// Puts the components into place, but not game initializations
 	this.init = function (opts) {
 		// call super init, with 1 argument(s)
 		supr(this, 'init', [opts]);
@@ -56,7 +57,6 @@ exports = Class(View, function (supr) {
 		var scoreLabel = new TextView({
 			superview: canvas,
 			layout: 'box',
-			text: '',
 			color: '#555',
 			horizontalAlign: 'left',
 			size: 100,
@@ -70,6 +70,20 @@ exports = Class(View, function (supr) {
 
 		blockLength = (canvas.style.height / GameLogic.ROWS);
 
+		this._initializeGame();
+
+		// register touch events for inputView
+		this.on('InputStart', touchBegan.bind(this));
+		this.on('InputMove', touchMoved.bind(this));
+		this.on('InputSelect', touchEnded.bind(this));
+		this.on('InputOut', touchEnded.bind(this));
+	}
+
+	this._initializeGame = function () {
+		this._scoreLabel.updateOpts({
+			text: ''
+		});
+		// the snake is basically an array of block views
 		var snake = [];
 		var snakeLength = GameLogic.SNAKE_START_LENGTH;
 		for (var i = 0; i < snakeLength ; i++) {
@@ -77,9 +91,9 @@ exports = Class(View, function (supr) {
 		};
 
 		this._snake = snake;
-
+		// the food representation
 		var tabemono = new View({
-			superview: canvas,
+			superview: this._canvas,
 			x: -blockLength,
 			y: -blockLength,
 			width: blockLength,
@@ -89,13 +103,6 @@ exports = Class(View, function (supr) {
 		});
 
 		this._tabemono = tabemono;
-
-		// register touch events for inputView
-		this.on('InputStart', touchBegan.bind(this));
-		this.on('InputMove', touchMoved.bind(this));
-		this.on('InputSelect', touchEnded.bind(this));
-		this.on('InputOut', touchEnded.bind(this));
-
 	}
 
 	// Update the GUI after the logic changed
@@ -124,12 +131,55 @@ exports = Class(View, function (supr) {
 			this._scoreLabel.updateOpts({
 				text: 'SCORE: ' + (score * 25)
 			});
-		// else if we lost, add a red block where the collision happened
 		} else if (didLose) {
-			this._newSnakeBlock(newLocation.r, newLocation.c).updateOpts({
-				backgroundColor: snakeLoseColor
-			});
+			this._showEndGameSequence(newLocation);
 		}
+	}
+
+	// reset the game
+	this.reset = function () {
+		// remove old stuff
+		this._resetButton.removeFromSuperview();
+		this._tabemono.removeFromSuperview();
+		this._snake.forEach(function (snakeBlock) {
+			snakeBlock.removeFromSuperview();
+		});
+
+		this.resetButton = null;
+		this._initializeGame();
+	}
+
+	// Called when the game ends (ie, user loses)
+	this._showEndGameSequence = function (newLocation) {
+		// else if we lost, add a red block where the collision happened
+		var collisionBlock = this._newSnakeBlock(newLocation.r, newLocation.c).updateOpts({
+			backgroundColor: snakeLoseColor
+		});
+		// push it to the snake for the sake of maintaining a ref to it
+		this._snake.push(collisionBlock);
+		// add a tranparent button in the middle to reset
+		var resetButton = new ButtonView({
+			superview: this._canvas,
+			title: 'Play Again',
+			layout: 'box',
+			inLayout: false,
+			backgroundColor: '#999',
+			opacity: 0.7,
+			text: {
+				color: '#FFFFFF',
+				size: 24
+			},
+			width: 160,
+			height: 50,
+			centerX: true,
+			centerY: true,
+			// event handling
+			on : {
+				up: resetPressed.bind(this)
+			}
+		});
+
+		this._resetButton = resetButton;
 	}
 
 	// create and return a view representing a block from the snake
@@ -147,6 +197,11 @@ exports = Class(View, function (supr) {
 	}
 
 	/* ---- TOUCH HANDLER FUNCTIONS ---- */
+
+	function resetPressed (event) {
+		this.emit('resetGame');
+	}
+
 	var _capturedTouches = null;
 	// Capture the initial point we touched upon
 	function touchBegan (event, point) {
