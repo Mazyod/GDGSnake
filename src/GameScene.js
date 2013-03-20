@@ -53,20 +53,8 @@ exports = Class(View, function (supr) {
 			justifyContent: 'end',
 			direction: 'vertical'
 		});
-		// Setup the scrore label
-		var scoreLabel = new TextView({
-			superview: canvas,
-			layout: 'box',
-			color: '#555',
-			horizontalAlign: 'left',
-			size: 100,
-			layoutWidth: '100%',
-			layoutHeight: '14%',
-			padding: '10 10 10 10'
-		});
 
 		this._canvas = canvas;
-		this._scoreLabel = scoreLabel;
 
 		blockLength = (canvas.style.height / GameLogic.ROWS);
 
@@ -80,9 +68,24 @@ exports = Class(View, function (supr) {
 	}
 
 	this._initializeGame = function () {
-		this._scoreLabel.updateOpts({
+		// Setup the scrore label
+		var scoreLabel = new TextView({
+			superview: this._canvas,
+			layout: 'box',
+			color: '#555',
+			horizontalAlign: 'left',
+			size: 100,
+			layoutWidth: '100%',
+			layoutHeight: '14%',
+			padding: '10 10 10 10'
+		});
+
+		scoreLabel.updateOpts({
 			text: ''
 		});
+
+		this._scoreLabel = scoreLabel;
+
 		// the snake is basically an array of block views
 		var snake = [];
 		var snakeLength = GameLogic.SNAKE_START_LENGTH;
@@ -139,13 +142,7 @@ exports = Class(View, function (supr) {
 	// reset the game
 	this.reset = function () {
 		// remove old stuff
-		this._resetButton.removeFromSuperview();
-		this._tabemono.removeFromSuperview();
-		this._snake.forEach(function (snakeBlock) {
-			snakeBlock.removeFromSuperview();
-		});
-
-		this.resetButton = null;
+		this._canvas.removeAllSubviews();
 		this._initializeGame();
 	}
 
