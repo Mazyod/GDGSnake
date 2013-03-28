@@ -14,3 +14,7 @@ v0.2.0
 v0.2.1
 ---
 * FIX: Reset game crash
+
+v0.2.2
+---
+* UPDATE: Read me

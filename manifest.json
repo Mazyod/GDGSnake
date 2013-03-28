@@ -2,9 +2,6 @@
 	"appID": "c92d0a41b01644cd8c15b912b5394a18",
 	"shortName": "GDGSnake",
 	"title": "GDGSnake",
-	"icons": {
-		"renderGloss": true
-	},
 	"studio": {
 		"name": "Example Studio Name",
 		"domain": "studio.example.com",
@@ -13,6 +10,9 @@
 	"supportedOrientations": [
 		"landscape"
 	],
+	"icons": {
+		"renderGloss": true
+	},
 	"description": "",
 	"icon": "resources/icons/icon512.png",
 	"splash": {
@@ -47,5 +47,5 @@
 			"renderGloss": true
 		}
 	},
-	"sdkVersion": "release-0.1.7"
+	"sdkVersion": "release-0.1.8"
 }
